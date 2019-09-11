@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PlayerFragment">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:tools="http://schemas.android.com/tools">
+
+        <ImageView
+            android:id="@+id/player_image"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@mipmap/ic_launcher">
+
+        </ImageView>
+        <TextView
+            android:id="@+id/player_title"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:text="--"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:paddingLeft="8dp"
+            android:layout_toRightOf="@id/player_image"/>
+        <TextView
+            android:id="@+id/player_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_below="@id/player_title"
+            android:layout_toRightOf="@id/player_image"
+            android:textSize="14sp"
+            android:text="--"
+            android:paddingLeft="8dp"
+            android:gravity="center"/>
+        <TextView
+            android:id="@+id/player_album"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_below="@id/player_artist"
+            android:layout_toRightOf="@id/player_image"
+            android:textSize="14sp"
+            android:text="--"
+            android:paddingLeft="8dp"
+            android:gravity="center"/>
+
+        <Button
+            android:layout_width="80dp"
+            android:text="Play"
+            android:id="@+id/playpause"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"/>
+
+
+
+    </RelativeLayout>
+
+</FrameLayout>
