@@ -7,15 +7,35 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import java.io.IOException;
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class SoundController {
 
-    private ArrayList<AudioFile> mSongs;
+    private static ArrayList<AudioFile> mSongs;
     private static SoundController mSoundController;
+    private static SaveState mSaveStateManager;
     private static MediaPlayer mMediaPlayer;
+    private static AudioFile mCurSong;
+    private static int mCurPos;
+    private static Context mContext;
+
+    private static boolean mMusicPlayerFragmentActive = false;
+
+    private static boolean mShuffle = false;
+
+    public static boolean isMusicPlayerFragmentActive() {
+        return mMusicPlayerFragmentActive;
+    }
+
+    public static void setMusicPlayerFragmentActive(boolean musicPlayerFragmentActive) {
+        mMusicPlayerFragmentActive = musicPlayerFragmentActive;
+    }
+
 
     private ArrayList<AudioFile> getAllAudioFromDevice(final Context context) {
 
@@ -55,11 +75,24 @@ public class SoundController {
             c.close();
         }
 
+        Collections.sort(tempAudioList, AudioFile.AudioTitleComparator);
+
         return tempAudioList;
     }
 
     private SoundController(Context context){
+
         mSongs = getAllAudioFromDevice(context);
+        mSaveStateManager = SaveState.getInstance(context);
+        mContext = context;
+        mCurSong = getAudioFileusingState();
+
+        if(mCurSong != null){
+            setMediaPlayer(mCurSong);
+            mMediaPlayer.seekTo(mCurPos);
+            EventBus bus = EventBus.getDefault();
+            bus.post("Initialize");
+        }
     }
 
     public static SoundController get(Context context){
@@ -99,6 +132,7 @@ public class SoundController {
 
     }
 
+
     public static void startPlayer(){
         mMediaPlayer.start();
     }
@@ -111,7 +145,81 @@ public class SoundController {
         mMediaPlayer.pause();
     }
 
-    public static void setMediaPlayer(AudioFile song, Context context){
-            mMediaPlayer = MediaPlayer.create(context, Uri.parse(song.getmPath()));
+    public static void setMediaPlayer(AudioFile song){
+            mMediaPlayer = MediaPlayer.create(mContext, Uri.parse(song.getmPath()));
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    SoundController.changeSong("Next");
+                    EventBus bus = EventBus.getDefault();
+                    bus.post("Update UI");
+                }
+            });
+    }
+
+    public static boolean isPlaying(){
+        return mMediaPlayer.isPlaying();
+    }
+
+    public static AudioFile getmCurSong() {
+        return mCurSong;
+    }
+
+    public static void setmCurSong(AudioFile CurSong, int position) {
+        mCurSong = CurSong;
+        mCurPos = position;
+        Log.v("SoundController","Value of position: "+mCurPos);
+    }
+
+    public static boolean isShuffling() {
+        return mShuffle;
+    }
+
+    public static void setShuffle(boolean shuffle) {
+        mShuffle = shuffle;
+    }
+
+    public static void changeSong(String direction){
+        if (mShuffle) {
+            Random randomizer = new Random();
+            mCurPos = randomizer.nextInt(mSongs.size());
+            mCurSong = mSongs.get( mCurPos );
+
+        }
+        else{
+            if(direction == "Next"){
+                mCurPos = (mCurPos + 1) % mSongs.size();
+                mCurSong = mSongs.get(mCurPos);
+            }
+            else{
+
+                if(mCurPos == 0) mCurPos = mSongs.size() - 1;
+                else mCurPos = (mCurPos - 1) % mSongs.size();
+
+                mCurSong = mSongs.get(mCurPos);
+            }
+        }
+    }
+
+    public static void saveData(){
+
+        if( mMediaPlayer!= null ){
+            int curPos = mMediaPlayer.getCurrentPosition();
+
+            mSaveStateManager.saveState(mCurSong.getmTitle(), curPos);
+        }
+    }
+
+    public static AudioFile getAudioFileusingState(){
+        String songtitle = mSaveStateManager.getTitle();
+
+        for(AudioFile audio : mSongs){
+            if(audio.getmTitle().equals(songtitle)){
+                mCurPos = mSaveStateManager.getLastPosition();
+                return audio;
+            }
+        }
+
+        return null;
     }
 }

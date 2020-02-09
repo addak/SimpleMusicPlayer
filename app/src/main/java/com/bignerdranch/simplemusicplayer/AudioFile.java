@@ -1,6 +1,8 @@
 package com.bignerdranch.simplemusicplayer;
 
-public class AudioFile {
+import java.util.Comparator;
+
+public class AudioFile implements  java.io.Serializable {
     private String mTitle;
     private String mPath;
     private String mArtist;
@@ -56,4 +58,17 @@ public class AudioFile {
     {
         return mAlbum;
     }
+
+
+    public static Comparator<AudioFile> AudioTitleComparator = new Comparator<AudioFile>() {
+        @Override
+        public int compare(AudioFile audioFile1, AudioFile audiofile2) {
+
+            String title1 = audioFile1.getmTitle();
+            String title2 = audiofile2.getmTitle();
+
+            return title1.compareTo(title2);
+
+        }
+    };
 }

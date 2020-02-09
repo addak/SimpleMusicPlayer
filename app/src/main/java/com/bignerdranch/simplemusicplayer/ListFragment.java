@@ -1,6 +1,8 @@
 package com.bignerdranch.simplemusicplayer;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.telecom.Call;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import java.util.List;
 
 
 public class ListFragment extends Fragment {
+    private static final int LIST_CHANGE = 2;
 
     private RecyclerView mRecyclerView;
     private List<AudioFile> mSongs;
@@ -35,7 +38,8 @@ public class ListFragment extends Fragment {
     }
 
     public interface Callbacks{
-        void onClickViewHolder(AudioFile song);
+        void onClickViewHolder();
+        void onReturnFromMusicPlayer();
     }
 
     @Override
@@ -57,6 +61,7 @@ public class ListFragment extends Fragment {
         private TextView mAlbumField;
         private TextView mArtistField;
         private AudioFile mSong;
+        private int mPosition;
         private RelativeLayout mRelativeLayout;
 
         public AudioItemHolder(LayoutInflater inflater, ViewGroup parent){
@@ -85,7 +90,9 @@ public class ListFragment extends Fragment {
              * Intent intent = CrimeActivity.CrimeActivityIntent(getActivity(), mCrime.getId());
              * startActivity(intent);
              */
-            mListCallbacks.onClickViewHolder(mSong);
+            SoundController.setmCurSong(mSong, getAdapterPosition());
+            startActivityForResult(MusicPlayerActivity.newIntent(getActivity()), LIST_CHANGE);
+            mListCallbacks.onClickViewHolder();
         }
     }
 
@@ -118,8 +125,8 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mSongs = SoundController.get(getActivity().getApplicationContext()).getSongs();
 
-        mSongs = SoundController.get(getActivity()).getSongs();
     }
 
     @Nullable
@@ -134,5 +141,16 @@ public class ListFragment extends Fragment {
         mRecyclerView.setAdapter(new AudioAdapter(mSongs));
 
         return v;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SoundController.saveData();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 }

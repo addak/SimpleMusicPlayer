@@ -1,12 +1,14 @@
 package com.bignerdranch.simplemusicplayer;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -53,18 +55,27 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Call
     }
 
     @Override
-    public void onClickViewHolder(AudioFile song) {
+    public void onClickViewHolder() {
 
         PlayerFragment playerFragment = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
 
         if(SoundController.getmMediaPlayer() != null && SoundController.getmMediaPlayer().isPlaying()){
             SoundController.stopPlayer();
         }
-        SoundController.setMediaPlayer(song, playerFragment.getContext());
+        AudioFile song = SoundController.getmCurSong();
+        SoundController.setMediaPlayer(song);
 
         playerFragment.setPlay();
         playerFragment.setmSong(song);
-        playerFragment.updatePlayer();
+        playerFragment.updateUI();
+
+    }
+
+    @Override
+    public void onReturnFromMusicPlayer() {
+        PlayerFragment playerFragment = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
+        playerFragment.setmSong(SoundController.getmCurSong());
+        playerFragment.updateUI();
     }
 
     public boolean checkPermissionForReadExternalStorage() {
@@ -110,5 +121,4 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Call
             // permissions this app might request.
         }
     }
-
 }
